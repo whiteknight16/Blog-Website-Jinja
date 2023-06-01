@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template,request,jsonify
 import requests
 import datetime
-
+import smtplib
+import os
 year=datetime.datetime.now().year
 
 
@@ -21,9 +22,26 @@ def about():
     return render_template("about.html",year=year)
 
 
-@app.route("/contact")
+@app.route("/contact",methods=["GET","POST"])
 def contact():
-    return render_template("contact.html",year=year)
+    my_mail="harshpandey1789@gmail.com"
+    password="jgohssrnajotodiy"
+    if request.method=="POST":
+        name=request.form['name']
+        email=request.form['email']
+        phone=request.form['phone']
+        message=request.form['message']
+        with smtplib.SMTP("smtp.gmail.com",port=587) as connection:
+                connection.starttls()
+                connection.login(user=my_mail,password=password)
+                connection.sendmail(from_addr=my_mail,to_addrs=my_mail,msg=f"Subject:Contact Me\n\n{name,phone,message}")
+                connection.close()
+
+        return render_template("contact.html",name=name,email=email,phone=phone,message=message,msg_sent=True)
+    else:
+        return render_template("contact.html",year=year,msg_sent=False)
+
+
 
 
 @app.route("/post/<int:index>")
